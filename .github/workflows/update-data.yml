@@ -28,7 +28,7 @@ jobs:
           NASS_API_KEY: ${{ secrets.NASS_API_KEY }}
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
           EIA_API_KEY: ${{ secrets.EIA_API_KEY }}
-        run: python scripts/run_all.py
+        run: python run_all.py
  
       - name: Save new data
         if: always()
