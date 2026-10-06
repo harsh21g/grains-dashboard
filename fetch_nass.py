@@ -1,13 +1,13 @@
 """USDA NASS QuickStats: crop condition, crop progress, and yearly production/yield/area."""
 from collections import defaultdict
 from common import get_json, save_json, need_key, num
-
+ 
 URL = "https://quickstats.nass.usda.gov/api/api_GET/"
 FIRST_YEAR = 2011
 LAST_YEAR = 2030
 CROPS = ["CORN", "SOYBEANS", "WHEAT"]
-
-
+ 
+ 
 def query(key, **kw):
     """Ask NASS for rows, 5 years at a time (NASS limits one answer to 50,000 rows)."""
     rows = []
@@ -27,10 +27,11 @@ def query(key, **kw):
             raise
         rows += j.get("data", [])
     return rows
-
-
+ 
+ 
 def group(rows, weekly):
     g = defaultdict(list)
+    seen = set()
     for r in rows:
         v = num(r.get("Value"))
         if v is None:
@@ -41,12 +42,16 @@ def group(rows, weekly):
         item = {"y": int(r["year"]), "v": v}
         if weekly:
             item["d"] = r.get("week_ending")
+        key = (sd, item["y"], item.get("d"))
+        if key in seen:      # NASS repeats identical rows; keep one
+            continue
+        seen.add(key)
         g[sd].append(item)
     for sd in g:
         g[sd].sort(key=lambda x: (x.get("d") or "", x["y"]))
     return dict(g)
-
-
+ 
+ 
 def run():
     key = need_key("NASS_API_KEY")
     weekly, annual = {}, {}
@@ -66,3 +71,4 @@ def run():
         raise RuntimeError("NASS returned no weekly data. Check NASS_API_KEY.")
     save_json("nass_weekly", weekly)
     save_json("nass_annual", annual)
+ 
