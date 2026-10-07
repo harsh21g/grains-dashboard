@@ -1,1 +1,1 @@
-{"updated":"2026-10-07T01:20:45+00:00","data":{"cftc":{"ok":true},"nass":{"ok":true},"eia":{"ok":true},"fred":{"ok":true}}}
+{"updated":"2026-10-07T09:17:32+00:00","data":{"cftc":{"ok":true},"nass":{"ok":true},"eia":{"ok":true},"fred":{"ok":true},"fas":{"ok":false,"error":"Could not read the ESR commodity list. Check FAS_API_KEY."}}}
