@@ -33,6 +33,8 @@ def api(path, key):
             last = f"HTTP {r.status_code}: {r.text[:200]}"
             if r.status_code in (400, 401, 403, 404):
                 break
+            if r.status_code == 500 and i >= 1:
+                break          # this API answers 500 for a wrong key, so do not keep retrying
         except (requests.RequestException, ValueError) as e:
             last = str(e)
         time.sleep(3 * (i + 1))
@@ -92,6 +94,8 @@ def aggregate(rows, total_codes):
 
 def run():
     key = need_key("FAS_API_KEY")
+    key = "".join(key.split())          # remove any spaces or line breaks from pasting
+    print(f"  FAS key length: {len(key)} characters (the key itself is never printed)")
     meta, sample = {}, None
     for name, path in [("esr_commodities", "/api/esr/commodities"), ("esr_countries", "/api/esr/countries"),
                        ("esr_units", "/api/esr/unitsOfMeasure"),
@@ -104,7 +108,8 @@ def run():
             meta[name] = f"error: {e}"
             print(f"  {name}: {e}")
     if not isinstance(meta["esr_commodities"], list):
-        raise RuntimeError("Could not read the ESR commodity list. Check FAS_API_KEY.")
+        raise RuntimeError("Could not read the ESR commodity list. The FAS API answers HTTP 500 when the key "
+                           "is wrong or not active. Check FAS_API_KEY.")
     (DATA / "fas_meta.json").write_text(json.dumps(meta, separators=(",", ":")))
 
     total_codes = set()
