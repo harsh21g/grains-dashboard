@@ -2,9 +2,9 @@
 import sys, json, datetime, traceback
 sys.path.insert(0, __file__.rsplit("/", 1)[0])
 from common import load_env, save_json
-import fetch_cftc, fetch_nass, fetch_eia, fetch_fred
+import fetch_cftc, fetch_nass, fetch_eia, fetch_fred, fetch_fas
 
-JOBS = [("cftc", fetch_cftc), ("nass", fetch_nass), ("eia", fetch_eia), ("fred", fetch_fred)]
+JOBS = [("cftc", fetch_cftc), ("nass", fetch_nass), ("eia", fetch_eia), ("fred", fetch_fred), ("fas", fetch_fas)]
 
 
 def main():
