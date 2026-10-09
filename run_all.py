@@ -2,12 +2,12 @@
 import sys, json, datetime, traceback
 sys.path.insert(0, __file__.rsplit("/", 1)[0])
 from common import load_env, save_json
-import fetch_cftc, fetch_nass, fetch_eia, fetch_fred, fetch_fas, fetch_psd, fetch_drought, fetch_weather
+import fetch_cftc, fetch_nass, fetch_eia, fetch_fred, fetch_psd, fetch_drought, fetch_weather, fetch_inspections
 
 JOBS = [("cftc", fetch_cftc), ("nass", fetch_nass), ("eia", fetch_eia), ("fred", fetch_fred),
-        ("psd", fetch_psd), ("drought", fetch_drought), ("weather", fetch_weather), ("fas", fetch_fas)]
+        ("psd", fetch_psd), ("drought", fetch_drought), ("weather", fetch_weather), ("inspections", fetch_inspections)]
 # New sources: if one fails, the run stays green and the problem is written to status.json
-OPTIONAL = {"psd", "drought", "weather", "fas"}
+OPTIONAL = {"psd", "drought", "weather", "inspections"}
 
 
 def main():
