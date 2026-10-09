@@ -1,1 +1,1 @@
-{"updated":"2026-10-08T01:43:10+00:00","data":{"cftc":{"ok":true},"nass":{"ok":true},"eia":{"ok":true},"fred":{"ok":true},"fas":{"ok":false,"error":"Could not read the ESR commodity list. The FAS API answers HTTP 500 when the key is wrong or not active. Check FAS_API_KEY."}}}
+{"updated":"2026-10-09T01:58:21+00:00","data":{"cftc":{"ok":true},"nass":{"ok":true},"eia":{"ok":true},"fred":{"ok":true},"fas":{"ok":false,"error":"Could not read the ESR commodity list. The FAS API answers HTTP 500 when the key is wrong or not active. Check FAS_API_KEY."}}}
