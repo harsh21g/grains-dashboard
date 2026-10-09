@@ -6,6 +6,8 @@ from common import save_json, num
 BASE = "https://usdmdataservices.unl.edu/api"
 STATES = ["IA", "IL", "IN", "OH", "MN", "NE", "SD", "ND", "MO", "KS", "OK", "TX", "CO"]
 START = "1/1/2011"
+FIPS = {"IA": "19", "IL": "17", "IN": "18", "OH": "39", "MN": "27", "NE": "31", "SD": "46",
+        "ND": "38", "MO": "29", "KS": "20", "OK": "40", "TX": "48", "CO": "08"}
 
 
 def get(url, params):
@@ -60,16 +62,33 @@ def run():
                 break
         except Exception as e:
             print(f"  US aoi={aoi}: {str(e)[:150]}")
+    errors = {}
     for st in STATES:
-        try:
-            rows = clean(get(f"{BASE}/StateStatistics/GetDroughtSeverityStatisticsByAreaPercent",
-                             {"aoi": st, "startdate": START, "enddate": end_s, "statisticsType": 1}))
-        except Exception as e:
-            print(f"  {st}: {str(e)[:150]}")
-            continue
+        rows, why = [], ""
+        for aoi in (st, FIPS[st]):               # state letters first, then the 2-digit FIPS code
+            try:
+                for y0 in range(2011, end.year + 1, 4):   # ask in 4-year pieces
+                    a = f"1/1/{y0}"
+                    b = f"12/31/{min(y0 + 3, end.year)}" if y0 + 3 < end.year else end_s
+                    rows += clean(get(f"{BASE}/StateStatistics/GetDroughtSeverityStatisticsByAreaPercent",
+                                      {"aoi": aoi, "startdate": a, "enddate": b, "statisticsType": 1}))
+                if rows:
+                    break
+                why = f"aoi={aoi}: answer had no usable rows"
+            except Exception as e:
+                rows, why = [], f"aoi={aoi}: {str(e)[:160]}"
         if rows:
-            out[st] = rows
-            print(f"  {st}: {len(rows)} weeks, latest {rows[-1]['d']}")
+            seen, uniq = set(), []
+            for r in sorted(rows, key=lambda x: x["d"]):
+                if r["d"] not in seen:
+                    seen.add(r["d"]); uniq.append(r)
+            out[st] = uniq
+            print(f"  {st}: {len(uniq)} weeks, latest {uniq[-1]['d']}")
+        else:
+            errors[st] = why
+            print(f"  {st}: {why}")
+    if errors:
+        out["_errors"] = errors
     if not out:
         raise RuntimeError("No drought data downloaded.")
     save_json("drought", out)
