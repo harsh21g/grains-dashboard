@@ -16,15 +16,22 @@ START = "2006-01-01"
 
 
 def get(url, params):
+    last = ""
     for i in range(4):
-        r = requests.get(url, params=params, timeout=120, headers={"User-Agent": "grains-dashboard/1.0"})
+        try:
+            r = requests.get(url, params=params, timeout=300, headers={"User-Agent": "grains-dashboard/1.0"})
+        except requests.RequestException as e:      # slow answer or network problem: wait and try again
+            last = str(e)[:120]
+            time.sleep(30 * (i + 1))
+            continue
         if r.status_code == 200:
             return r.json()
         if r.status_code == 429 or r.status_code >= 500:
+            last = f"HTTP {r.status_code}"
             time.sleep(65 * (i + 1))             # the free service allows only so many requests per minute
             continue
         raise RuntimeError(f"HTTP {r.status_code}: {r.text[:150]}")
-    raise RuntimeError("too many requests, will try again at the next run")
+    raise RuntimeError("no answer after 4 tries (" + last + "), will try again at the next run")
 
 
 def weekly(dates, precip, temp):
