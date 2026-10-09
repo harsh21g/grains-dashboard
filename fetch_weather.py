@@ -12,19 +12,19 @@ REGIONS = {
     "Brazil: Rio Grande do Sul (soy)": (-29.0, -53.0), "Argentina: Pampas (soy, corn)": (-34.0, -61.0),
 }
 VARS = "precipitation_sum,temperature_2m_mean"
-START = "2000-01-01"
+START = "2006-01-01"
 
 
 def get(url, params):
-    for i in range(3):
+    for i in range(4):
         r = requests.get(url, params=params, timeout=120, headers={"User-Agent": "grains-dashboard/1.0"})
         if r.status_code == 200:
             return r.json()
-        if r.status_code == 429:
-            time.sleep(20 * (i + 1))
+        if r.status_code == 429 or r.status_code >= 500:
+            time.sleep(65 * (i + 1))             # the free service allows only so many requests per minute
             continue
         raise RuntimeError(f"HTTP {r.status_code}: {r.text[:150]}")
-    raise RuntimeError("rate limit, try again later")
+    raise RuntimeError("too many requests, will try again at the next run")
 
 
 def weekly(dates, precip, temp):
@@ -45,7 +45,7 @@ def weekly(dates, precip, temp):
 def run():
     today = datetime.date.today()
     arch_end = (today - datetime.timedelta(days=7)).isoformat()
-    out = {}
+    out, errors = {}, {}
     for name, (lat, lon) in REGIONS.items():
         try:
             a = get("https://archive-api.open-meteo.com/v1/archive",
@@ -56,6 +56,8 @@ def run():
                      "forecast_days": 16, "timezone": "UTC"})["daily"]
         except Exception as e:
             print(f"  {name}: {str(e)[:150]}")
+            errors[name] = str(e)[:150]
+            time.sleep(10)
             continue
         recent = [{"d": d, "p": p, "t": t, "fc": d > today.isoformat()}
                   for d, p, t in zip(f["time"], f["precipitation_sum"], f["temperature_2m_mean"])]
@@ -63,7 +65,9 @@ def run():
                      "weekly": weekly(a["time"], a["precipitation_sum"], a["temperature_2m_mean"]),
                      "recent": recent}
         print(f"  {name}: {len(out[name]['weekly'])} weeks, {len(recent)} recent/forecast days")
-        time.sleep(1)
-    if not out:
+        time.sleep(6)
+    if errors:
+        out["_errors"] = errors
+    if not any(k[0] != "_" for k in out):
         raise RuntimeError("No weather data downloaded.")
     save_json("weather", out)
