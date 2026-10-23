@@ -1,1 +1,1 @@
-{"updated":"2026-10-22T01:23:19+00:00","data":{"cftc":{"ok":true},"nass":{"ok":true},"eia":{"ok":true},"fred":{"ok":false,"error":"Request failed for https://api.stlouisfed.org/fred/series/observations: Expecting value: line 1 column 1 (char 0)"},"psd":{"ok":true},"drought":{"ok":true},"weather":{"ok":true},"inspections":{"ok":true}}}
+{"updated":"2026-10-23T01:23:02+00:00","data":{"cftc":{"ok":true},"nass":{"ok":true},"eia":{"ok":true},"fred":{"ok":true},"psd":{"ok":true},"drought":{"ok":true},"weather":{"ok":true},"inspections":{"ok":true}}}
